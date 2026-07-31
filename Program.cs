@@ -10,6 +10,9 @@ try
         var game = new TetrisGame();
         game.Run();
 
+        if (game.ExitRequested)
+            break;
+
         Console.SetCursorPosition(0, GameField.Height + 5);
         Console.Write("Игра окончена! Нажмите R, чтобы начать заново, или Esc для выхода. ");
 

@@ -4,13 +4,20 @@ namespace Tetris;
 
 public sealed class TetrisGame
 {
-    private const int FallIntervalMilliseconds = 500;
+    private const int InitialFallIntervalMilliseconds = 500;
+    private const int MinimumFallIntervalMilliseconds = 100;
     private readonly GameField _field = new();
     private readonly Random _random = new();
     private Tetromino _current;
     private Tetromino _next;
     private int _score;
+    private int _clearedLines;
     private bool _gameOver;
+
+    public bool ExitRequested { get; private set; }
+    private int Level => _clearedLines / 10 + 1;
+    private int FallIntervalMilliseconds =>
+        Math.Max(MinimumFallIntervalMilliseconds, InitialFallIntervalMilliseconds - (Level - 1) * 40);
 
     public TetrisGame()
     {
@@ -33,7 +40,7 @@ public sealed class TetrisGame
                 fallTimer.Restart();
             }
 
-            _field.Draw(_current, _next, _score);
+            _field.Draw(_current, _next, _score, Level, _clearedLines);
             Thread.Sleep(20);
         }
     }
@@ -56,9 +63,13 @@ public sealed class TetrisGame
                 case ConsoleKey.UpArrow:
                     TryRotate();
                     break;
+                case ConsoleKey.Spacebar:
+                    HardDrop();
+                    return;
                 case ConsoleKey.Escape:
+                    ExitRequested = true;
                     _gameOver = true;
-                    break;
+                    return;
             }
         }
     }
@@ -82,7 +93,8 @@ public sealed class TetrisGame
 
         _field.Lock(_current);
         var lines = _field.ClearFullLines();
-        _score += lines * lines * 100;
+        _score += CalculateLineScore(lines) * Level;
+        _clearedLines += lines;
         _current = _next;
         _current.X = (GameField.Width - _current.Width) / 2;
         _current.Y = 0;
@@ -96,7 +108,38 @@ public sealed class TetrisGame
     private void TryRotate()
     {
         var rotated = _current.GetRotatedBlocks();
-        if (_field.CanPlace(_current, _current.X, _current.Y, rotated))
+        (int X, int Y)[] kickOffsets = { (0, 0), (-1, 0), (1, 0), (-2, 0), (2, 0), (0, -1) };
+
+        foreach (var (offsetX, offsetY) in kickOffsets)
+        {
+            var newX = _current.X + offsetX;
+            var newY = _current.Y + offsetY;
+            if (!_field.CanPlace(_current, newX, newY, rotated))
+                continue;
+
+            _current.X = newX;
+            _current.Y = newY;
             _current.ApplyRotation(rotated);
+            return;
+        }
     }
+
+    private void HardDrop()
+    {
+        var droppedRows = 0;
+        while (TryMove(0, 1))
+            droppedRows++;
+
+        _score += droppedRows * 2;
+        MoveDown();
+    }
+
+    private static int CalculateLineScore(int lines) => lines switch
+    {
+        1 => 100,
+        2 => 300,
+        3 => 500,
+        4 => 800,
+        _ => 0
+    };
 }

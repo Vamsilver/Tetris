@@ -67,11 +67,11 @@ public sealed class GameField
     }
 
     /// <summary>Отрисовывает поле вместе с текущей падающей фигурой.</summary>
-    public void Draw(Tetromino figure, Tetromino nextFigure, int score)
+    public void Draw(Tetromino figure, Tetromino nextFigure, int score, int level, int clearedLines)
     {
         Console.SetCursorPosition(0, 0);
         Console.WriteLine("ТЕТРИС".PadRight(48));
-        Console.WriteLine($"Счёт: {score}".PadRight(48));
+        Console.WriteLine($"Счёт: {score}   Уровень: {level}   Линии: {clearedLines}".PadRight(48));
         Console.WriteLine("┌" + new string('─', Width * 2) + "┐");
 
         for (var row = 0; row < Height; row++)
@@ -88,7 +88,7 @@ public sealed class GameField
         }
 
         Console.WriteLine("└" + new string('─', Width * 2) + "┘");
-        Console.WriteLine("← → — движение | ↑ — поворот | ↓ — вниз | Esc — выход".PadRight(64));
+        Console.WriteLine("← → — движение | ↑ — поворот | ↓ — вниз | Пробел — сброс | Esc — выход".PadRight(78));
     }
 
     private static string GetPreviewLine(Tetromino figure, int fieldRow)
