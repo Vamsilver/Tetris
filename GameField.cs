@@ -67,11 +67,11 @@ public sealed class GameField
     }
 
     /// <summary>Отрисовывает поле вместе с текущей падающей фигурой.</summary>
-    public void Draw(Tetromino figure, int score)
+    public void Draw(Tetromino figure, Tetromino nextFigure, int score)
     {
         Console.SetCursorPosition(0, 0);
-        Console.WriteLine("ТЕТРИС".PadRight(24));
-        Console.WriteLine($"Счёт: {score}".PadRight(24));
+        Console.WriteLine("ТЕТРИС".PadRight(48));
+        Console.WriteLine($"Счёт: {score}".PadRight(48));
         Console.WriteLine("┌" + new string('─', Width * 2) + "┐");
 
         for (var row = 0; row < Height; row++)
@@ -82,11 +82,44 @@ public sealed class GameField
                 var occupied = _cells[row, column] == 1 || IsFigureBlock(figure, column, row);
                 Console.Write(occupied ? "██" : "  ");
             }
-            Console.WriteLine('│');
+            Console.Write('│');
+            Console.Write("   ");
+            Console.WriteLine(GetPreviewLine(nextFigure, row).PadRight(24));
         }
 
         Console.WriteLine("└" + new string('─', Width * 2) + "┘");
         Console.WriteLine("← → — движение | ↑ — поворот | ↓ — вниз | Esc — выход".PadRight(64));
+    }
+
+    private static string GetPreviewLine(Tetromino figure, int fieldRow)
+    {
+        const int previewSize = 4;
+
+        if (fieldRow == 0)
+            return "Следующая фигура:";
+        if (fieldRow == 1)
+            return "┌" + new string('─', previewSize * 2) + "┐";
+        if (fieldRow == previewSize + 2)
+            return "└" + new string('─', previewSize * 2) + "┘";
+        if (fieldRow < 2 || fieldRow > previewSize + 1)
+            return string.Empty;
+
+        var previewRow = fieldRow - 2;
+        var offsetX = (previewSize - figure.Width) / 2;
+        var offsetY = (previewSize - figure.Height) / 2;
+        var line = "│";
+
+        for (var column = 0; column < previewSize; column++)
+        {
+            var figureRow = previewRow - offsetY;
+            var figureColumn = column - offsetX;
+            var occupied = figureRow >= 0 && figureRow < figure.Height &&
+                           figureColumn >= 0 && figureColumn < figure.Width &&
+                           figure.Blocks[figureRow, figureColumn] == 1;
+            line += occupied ? "██" : "  ";
+        }
+
+        return line + "│";
     }
 
     private static bool IsFigureBlock(Tetromino figure, int x, int y)

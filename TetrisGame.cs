@@ -8,10 +8,15 @@ public sealed class TetrisGame
     private readonly GameField _field = new();
     private readonly Random _random = new();
     private Tetromino _current;
+    private Tetromino _next;
     private int _score;
     private bool _gameOver;
 
-    public TetrisGame() => _current = new Tetromino(_random);
+    public TetrisGame()
+    {
+        _current = new Tetromino(_random);
+        _next = new Tetromino(_random);
+    }
 
     public void Run()
     {
@@ -28,7 +33,7 @@ public sealed class TetrisGame
                 fallTimer.Restart();
             }
 
-            _field.Draw(_current, _score);
+            _field.Draw(_current, _next, _score);
             Thread.Sleep(20);
         }
     }
@@ -78,7 +83,10 @@ public sealed class TetrisGame
         _field.Lock(_current);
         var lines = _field.ClearFullLines();
         _score += lines * lines * 100;
-        _current = new Tetromino(_random);
+        _current = _next;
+        _current.X = (GameField.Width - _current.Width) / 2;
+        _current.Y = 0;
+        _next = new Tetromino(_random);
 
         // Новая фигура не помещается сверху — поле заполнено, игра окончена.
         if (!_field.CanPlace(_current, _current.X, _current.Y))
