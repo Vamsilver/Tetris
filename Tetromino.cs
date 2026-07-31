@@ -3,17 +3,19 @@ namespace Tetris;
 /// <summary>Падающая фигура, представленная матрицей из нулей и единиц.</summary>
 public sealed class Tetromino
 {
-    private static readonly int[][,] Shapes =
+    private static readonly IReadOnlyDictionary<TetrominoType, int[,]> Shapes =
+        new Dictionary<TetrominoType, int[,]>
     {
-        new int[,] { { 1, 1, 1, 1 } },                     // I
-        new int[,] { { 1, 1 }, { 1, 1 } },                 // O
-        new int[,] { { 0, 1, 0 }, { 1, 1, 1 } },           // T
-        new int[,] { { 0, 1, 1 }, { 1, 1, 0 } },           // S
-        new int[,] { { 1, 1, 0 }, { 0, 1, 1 } },           // Z
-        new int[,] { { 1, 0, 0 }, { 1, 1, 1 } },           // J
-        new int[,] { { 0, 0, 1 }, { 1, 1, 1 } }            // L
+        [TetrominoType.I] = new int[,] { { 1, 1, 1, 1 } },
+        [TetrominoType.O] = new int[,] { { 1, 1 }, { 1, 1 } },
+        [TetrominoType.T] = new int[,] { { 0, 1, 0 }, { 1, 1, 1 } },
+        [TetrominoType.S] = new int[,] { { 0, 1, 1 }, { 1, 1, 0 } },
+        [TetrominoType.Z] = new int[,] { { 1, 1, 0 }, { 0, 1, 1 } },
+        [TetrominoType.J] = new int[,] { { 1, 0, 0 }, { 1, 1, 1 } },
+        [TetrominoType.L] = new int[,] { { 0, 0, 1 }, { 1, 1, 1 } }
     };
 
+    public TetrominoType Type { get; }
     public int[,] Blocks { get; private set; }
     public int X { get; set; }
     public int Y { get; set; }
@@ -22,7 +24,9 @@ public sealed class Tetromino
 
     public Tetromino(Random random)
     {
-        Blocks = (int[,])Shapes[random.Next(Shapes.Length)].Clone();
+        var types = Enum.GetValues<TetrominoType>();
+        Type = types[random.Next(types.Length)];
+        Blocks = (int[,])Shapes[Type].Clone();
         X = (GameField.Width - Width) / 2;
         Y = 0;
     }
