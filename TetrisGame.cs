@@ -52,16 +52,16 @@ public sealed class TetrisGame
             switch (Console.ReadKey(true).Key)
             {
                 case ConsoleKey.LeftArrow:
-                    TryMove(-1, 0);
+                    MoveLeft();
                     break;
                 case ConsoleKey.RightArrow:
-                    TryMove(1, 0);
+                    MoveRight();
                     break;
                 case ConsoleKey.DownArrow:
-                    MoveDown();
+                    SoftDrop();
                     break;
                 case ConsoleKey.UpArrow:
-                    TryRotate();
+                    Rotate();
                     break;
                 case ConsoleKey.Spacebar:
                     HardDrop();
@@ -74,6 +74,16 @@ public sealed class TetrisGame
         }
     }
 
+    /// <summary>Перемещает текущую фигуру влево, если клетка свободна.</summary>
+    private void MoveLeft() => TryMove(-1, 0);
+
+    /// <summary>Перемещает текущую фигуру вправо, если клетка свободна.</summary>
+    private void MoveRight() => TryMove(1, 0);
+
+    /// <summary>Ускоряет падение фигуры на одну строку.</summary>
+    private void SoftDrop() => MoveDown();
+
+    /// <summary>Проверяет возможность перемещения и изменяет координаты фигуры.</summary>
     private bool TryMove(int deltaX, int deltaY)
     {
         var newX = _current.X + deltaX;
@@ -86,6 +96,7 @@ public sealed class TetrisGame
         return true;
     }
 
+    /// <summary>Опускает фигуру или фиксирует её при достижении препятствия.</summary>
     private void MoveDown()
     {
         if (TryMove(0, 1))
@@ -105,7 +116,8 @@ public sealed class TetrisGame
             _gameOver = true;
     }
 
-    private void TryRotate()
+    /// <summary>Поворачивает фигуру на 90 градусов с поправкой возле стен и пола.</summary>
+    private void Rotate()
     {
         var rotated = _current.GetRotatedBlocks();
         (int X, int Y)[] kickOffsets = { (0, 0), (-1, 0), (1, 0), (-2, 0), (2, 0), (0, -1) };

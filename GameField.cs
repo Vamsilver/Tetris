@@ -8,6 +8,7 @@ public sealed class GameField
 
     private readonly int[,] _cells = new int[Height, Width];
 
+    /// <summary>Проверяет, можно ли разместить фигуру в указанных координатах.</summary>
     public bool CanPlace(Tetromino figure, int newX, int newY, int[,]? blocks = null)
     {
         blocks ??= figure.Blocks;
@@ -31,6 +32,7 @@ public sealed class GameField
         return true;
     }
 
+    /// <summary>Записывает приземлившуюся фигуру в постоянную матрицу поля.</summary>
     public void Lock(Tetromino figure)
     {
         for (var row = 0; row < figure.Height; row++)
@@ -39,6 +41,7 @@ public sealed class GameField
                 _cells[figure.Y + row, figure.X + column] = 1;
     }
 
+    /// <summary>Удаляет заполненные линии и возвращает их количество.</summary>
     public int ClearFullLines()
     {
         var cleared = 0;
@@ -66,9 +69,31 @@ public sealed class GameField
         return cleared;
     }
 
+    /// <summary>
+    /// Возвращает матрицу текущего состояния поля с наложенной падающей фигурой.
+    /// После движения или вращения фигуры её единицы занимают новые элементы матрицы.
+    /// </summary>
+    public int[,] GetCurrentState(Tetromino figure)
+    {
+        var state = (int[,])_cells.Clone();
+
+        for (var row = 0; row < figure.Height; row++)
+        for (var column = 0; column < figure.Width; column++)
+        {
+            var fieldX = figure.X + column;
+            var fieldY = figure.Y + row;
+            if (figure.Blocks[row, column] == 1 &&
+                fieldX >= 0 && fieldX < Width && fieldY >= 0 && fieldY < Height)
+                state[fieldY, fieldX] = 1;
+        }
+
+        return state;
+    }
+
     /// <summary>Отрисовывает поле вместе с текущей падающей фигурой.</summary>
     public void Draw(Tetromino figure, Tetromino nextFigure, int score, int level, int clearedLines)
     {
+        var currentState = GetCurrentState(figure);
         Console.SetCursorPosition(0, 0);
         Console.WriteLine("ТЕТРИС".PadRight(48));
         Console.WriteLine($"Счёт: {score}   Уровень: {level}   Линии: {clearedLines}".PadRight(48));
@@ -79,8 +104,7 @@ public sealed class GameField
             Console.Write('│');
             for (var column = 0; column < Width; column++)
             {
-                var occupied = _cells[row, column] == 1 || IsFigureBlock(figure, column, row);
-                Console.Write(occupied ? "██" : "  ");
+                Console.Write(currentState[row, column] == 1 ? "██" : "  ");
             }
             Console.Write('│');
             Console.Write("   ");
@@ -120,14 +144,5 @@ public sealed class GameField
         }
 
         return line + "│";
-    }
-
-    private static bool IsFigureBlock(Tetromino figure, int x, int y)
-    {
-        var localX = x - figure.X;
-        var localY = y - figure.Y;
-        return localX >= 0 && localX < figure.Width &&
-               localY >= 0 && localY < figure.Height &&
-               figure.Blocks[localY, localX] == 1;
     }
 }
