@@ -96,7 +96,7 @@ public sealed class GameField
         const int previewSize = 4;
 
         if (fieldRow == 0)
-            return $"Следующая фигура: {figure.Type}";
+            return $"Следующая: {figure.DisplayName}";
         if (fieldRow == 1)
             return "┌" + new string('─', previewSize * 2) + "┐";
         if (fieldRow == previewSize + 2)

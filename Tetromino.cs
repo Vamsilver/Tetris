@@ -6,13 +6,13 @@ public sealed class Tetromino
     private static readonly IReadOnlyDictionary<TetrominoType, int[,]> Shapes =
         new Dictionary<TetrominoType, int[,]>
     {
-        [TetrominoType.I] = new int[,] { { 1, 1, 1, 1 } },
-        [TetrominoType.O] = new int[,] { { 1, 1 }, { 1, 1 } },
-        [TetrominoType.T] = new int[,] { { 0, 1, 0 }, { 1, 1, 1 } },
-        [TetrominoType.S] = new int[,] { { 0, 1, 1 }, { 1, 1, 0 } },
-        [TetrominoType.Z] = new int[,] { { 1, 1, 0 }, { 0, 1, 1 } },
-        [TetrominoType.J] = new int[,] { { 1, 0, 0 }, { 1, 1, 1 } },
-        [TetrominoType.L] = new int[,] { { 0, 0, 1 }, { 1, 1, 1 } }
+        [TetrominoType.Line] = new int[,] { { 1, 1, 1, 1 } },
+        [TetrominoType.Square] = new int[,] { { 1, 1 }, { 1, 1 } },
+        [TetrominoType.Tee] = new int[,] { { 0, 1, 0 }, { 1, 1, 1 } },
+        [TetrominoType.RightSkew] = new int[,] { { 0, 1, 1 }, { 1, 1, 0 } },
+        [TetrominoType.LeftSkew] = new int[,] { { 1, 1, 0 }, { 0, 1, 1 } },
+        [TetrominoType.LeftHook] = new int[,] { { 1, 0, 0 }, { 1, 1, 1 } },
+        [TetrominoType.RightHook] = new int[,] { { 0, 0, 1 }, { 1, 1, 1 } }
     };
 
     public TetrominoType Type { get; }
@@ -21,6 +21,17 @@ public sealed class Tetromino
     public int Y { get; set; }
     public int Width => Blocks.GetLength(1);
     public int Height => Blocks.GetLength(0);
+    public string DisplayName => Type switch
+    {
+        TetrominoType.Line => "Линия",
+        TetrominoType.Square => "Квадрат",
+        TetrominoType.Tee => "Т-образная",
+        TetrominoType.RightSkew => "Правый зигзаг",
+        TetrominoType.LeftSkew => "Левый зигзаг",
+        TetrominoType.LeftHook => "Левый крюк",
+        TetrominoType.RightHook => "Правый крюк",
+        _ => Type.ToString()
+    };
 
     public Tetromino(Random random)
     {
