@@ -6,6 +6,15 @@ public sealed class TetrisGame
 {
     private const int InitialFallIntervalMilliseconds = 500;
     private const int MinimumFallIntervalMilliseconds = 100;
+    private const int SpeedIncreasePerLevelMilliseconds = 40;
+    private const int LinesPerLevel = 10;
+    private const int HardDropPointsPerRow = 2;
+    private const int FrameDelayMilliseconds = 20;
+    private static readonly (int X, int Y)[] WallKickOffsets =
+    {
+        (0, 0), (-1, 0), (1, 0), (-2, 0), (2, 0), (0, -1)
+    };
+
     private readonly GameField _field = new();
     private readonly Random _random = new();
     private Tetromino _current;
@@ -15,9 +24,11 @@ public sealed class TetrisGame
     private bool _gameOver;
 
     public bool ExitRequested { get; private set; }
-    private int Level => _clearedLines / 10 + 1;
+    private int Level => _clearedLines / LinesPerLevel + 1;
     private int FallIntervalMilliseconds =>
-        Math.Max(MinimumFallIntervalMilliseconds, InitialFallIntervalMilliseconds - (Level - 1) * 40);
+        Math.Max(
+            MinimumFallIntervalMilliseconds,
+            InitialFallIntervalMilliseconds - (Level - 1) * SpeedIncreasePerLevelMilliseconds);
 
     public TetrisGame()
     {
@@ -33,6 +44,8 @@ public sealed class TetrisGame
         while (!_gameOver)
         {
             HandleInput();
+            if (_gameOver)
+                break;
 
             if (fallTimer.ElapsedMilliseconds >= FallIntervalMilliseconds)
             {
@@ -41,7 +54,7 @@ public sealed class TetrisGame
             }
 
             _field.Draw(_current, _next, _score, Level, _clearedLines);
-            Thread.Sleep(20);
+            Thread.Sleep(FrameDelayMilliseconds);
         }
     }
 
@@ -102,27 +115,39 @@ public sealed class TetrisGame
         if (TryMove(0, 1))
             return;
 
+        LockCurrentFigure();
+    }
+
+    private void LockCurrentFigure()
+    {
         _field.Lock(_current);
-        var lines = _field.ClearFullLines();
-        _score += CalculateLineScore(lines) * Level;
-        _clearedLines += lines;
+        UpdateScore(_field.ClearFullLines());
+        SpawnNextFigure();
+
+        // Новая фигура не помещается сверху — поле заполнено, игра окончена.
+        _gameOver = !_field.CanPlace(_current, _current.X, _current.Y);
+    }
+
+    private void SpawnNextFigure()
+    {
         _current = _next;
         _current.X = (GameField.Width - _current.Width) / 2;
         _current.Y = 0;
         _next = new Tetromino(_random);
+    }
 
-        // Новая фигура не помещается сверху — поле заполнено, игра окончена.
-        if (!_field.CanPlace(_current, _current.X, _current.Y))
-            _gameOver = true;
+    private void UpdateScore(int clearedLines)
+    {
+        _score += CalculateLineScore(clearedLines) * Level;
+        _clearedLines += clearedLines;
     }
 
     /// <summary>Поворачивает фигуру на 90 градусов с поправкой возле стен и пола.</summary>
     private void Rotate()
     {
         var rotated = _current.GetRotatedBlocks();
-        (int X, int Y)[] kickOffsets = { (0, 0), (-1, 0), (1, 0), (-2, 0), (2, 0), (0, -1) };
 
-        foreach (var (offsetX, offsetY) in kickOffsets)
+        foreach (var (offsetX, offsetY) in WallKickOffsets)
         {
             var newX = _current.X + offsetX;
             var newY = _current.Y + offsetY;
@@ -142,7 +167,7 @@ public sealed class TetrisGame
         while (TryMove(0, 1))
             droppedRows++;
 
-        _score += droppedRows * 2;
+        _score += droppedRows * HardDropPointsPerRow;
         MoveDown();
     }
 

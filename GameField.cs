@@ -22,7 +22,7 @@ public sealed class GameField
             var fieldX = newX + column;
             var fieldY = newY + row;
 
-            if (fieldX < 0 || fieldX >= Width || fieldY < 0 || fieldY >= Height)
+            if (!IsInside(fieldX, fieldY))
                 return false;
 
             if (_cells[fieldY, fieldX] == 1)
@@ -48,21 +48,11 @@ public sealed class GameField
 
         for (var row = Height - 1; row >= 0; row--)
         {
-            var isFull = true;
-            for (var column = 0; column < Width; column++)
-                isFull &= _cells[row, column] == 1;
-
-            if (!isFull)
+            if (!IsRowFull(row))
                 continue;
 
             cleared++;
-            for (var sourceRow = row; sourceRow > 0; sourceRow--)
-            for (var column = 0; column < Width; column++)
-                _cells[sourceRow, column] = _cells[sourceRow - 1, column];
-
-            for (var column = 0; column < Width; column++)
-                _cells[0, column] = 0;
-
+            RemoveRow(row);
             row++; // Проверяем эту строку ещё раз после сдвига.
         }
 
@@ -83,7 +73,7 @@ public sealed class GameField
             var fieldX = figure.X + column;
             var fieldY = figure.Y + row;
             if (figure.Blocks[row, column] == 1 &&
-                fieldX >= 0 && fieldX < Width && fieldY >= 0 && fieldY < Height)
+                IsInside(fieldX, fieldY))
                 state[fieldY, fieldX] = 1;
         }
 
@@ -144,5 +134,27 @@ public sealed class GameField
         }
 
         return line + "│";
+    }
+
+    private static bool IsInside(int x, int y) =>
+        x >= 0 && x < Width && y >= 0 && y < Height;
+
+    private bool IsRowFull(int row)
+    {
+        for (var column = 0; column < Width; column++)
+            if (_cells[row, column] == 0)
+                return false;
+
+        return true;
+    }
+
+    private void RemoveRow(int row)
+    {
+        for (var sourceRow = row; sourceRow > 0; sourceRow--)
+        for (var column = 0; column < Width; column++)
+            _cells[sourceRow, column] = _cells[sourceRow - 1, column];
+
+        for (var column = 0; column < Width; column++)
+            _cells[0, column] = 0;
     }
 }
