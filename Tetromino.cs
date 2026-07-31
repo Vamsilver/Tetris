@@ -3,16 +3,57 @@ namespace Tetris;
 /// <summary>Падающая фигура, представленная матрицей из нулей и единиц.</summary>
 public sealed class Tetromino
 {
+    private static readonly int[,] LineShape = new int[,]
+    {
+        { 1, 1, 1, 1 }
+    };
+
+    private static readonly int[,] SquareShape = new int[,]
+    {
+        { 1, 1 },
+        { 1, 1 }
+    };
+
+    private static readonly int[,] TeeShape = new int[,]
+    {
+        { 0, 1, 0 },
+        { 1, 1, 1 }
+    };
+
+    private static readonly int[,] RightSkewShape = new int[,]
+    {
+        { 0, 1, 1 },
+        { 1, 1, 0 }
+    };
+
+    private static readonly int[,] LeftSkewShape = new int[,]
+    {
+        { 1, 1, 0 },
+        { 0, 1, 1 }
+    };
+
+    private static readonly int[,] LeftHookShape = new int[,]
+    {
+        { 1, 0, 0 },
+        { 1, 1, 1 }
+    };
+
+    private static readonly int[,] RightHookShape = new int[,]
+    {
+        { 0, 0, 1 },
+        { 1, 1, 1 }
+    };
+
     private static readonly IReadOnlyDictionary<TetrominoType, int[,]> Shapes =
         new Dictionary<TetrominoType, int[,]>
     {
-        [TetrominoType.Line] = new int[,] { { 1, 1, 1, 1 } },
-        [TetrominoType.Square] = new int[,] { { 1, 1 }, { 1, 1 } },
-        [TetrominoType.Tee] = new int[,] { { 0, 1, 0 }, { 1, 1, 1 } },
-        [TetrominoType.RightSkew] = new int[,] { { 0, 1, 1 }, { 1, 1, 0 } },
-        [TetrominoType.LeftSkew] = new int[,] { { 1, 1, 0 }, { 0, 1, 1 } },
-        [TetrominoType.LeftHook] = new int[,] { { 1, 0, 0 }, { 1, 1, 1 } },
-        [TetrominoType.RightHook] = new int[,] { { 0, 0, 1 }, { 1, 1, 1 } }
+        [TetrominoType.Line] = LineShape,
+        [TetrominoType.Square] = SquareShape,
+        [TetrominoType.Tee] = TeeShape,
+        [TetrominoType.RightSkew] = RightSkewShape,
+        [TetrominoType.LeftSkew] = LeftSkewShape,
+        [TetrominoType.LeftHook] = LeftHookShape,
+        [TetrominoType.RightHook] = RightHookShape
     };
 
     public TetrominoType Type { get; }
